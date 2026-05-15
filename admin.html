@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="mg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADMIN - SAMY TELAZA 407</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root {
+    --primary: #6366f1; --accent: #f43f5e; --bg: #0f172a;
+    --card: #1e293b; --border: #334155; --text: #f8fafc;
+    --success: #10b981; --warning: #f59e0b;
+}
+* { box-sizing: border-box; }
+body { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; background: var(--bg); color: var(--text); }
+#admin-auth { position: fixed; inset: 0; background: var(--bg); z-index: 5000; display: flex; flex-direction: column; justify-content: center; padding: 40px; align-items: center; }
+.auth-card { background: var(--card); padding: 30px; border-radius: 28px; width: 100%; max-width: 350px; border: 1px solid var(--border); text-align: center; }
+.admin-app { max-width: 450px; margin: auto; min-height: 100vh; display: none; padding-bottom: 100px; }
+header { padding: 25px 20px; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+.admin-title { font-weight: 800; font-size: 1.1rem; color: var(--primary); display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
+.stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
+.stat-card { background: var(--card); padding: 20px; border-radius: 24px; border: 1px solid var(--border); }
+.stat-val { display: block; font-size: 1.3rem; font-weight: 800; color: #fff; margin-top: 5px; }
+.stat-label { font-size: 0.6rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.section-title { padding: 0 20px; font-size: 0.75rem; text-transform: uppercase; color: #94a3b8; font-weight: 800; letter-spacing: 1.5px; margin-top: 25px; display: flex; align-items: center; gap: 8px; }
+.order-list { padding: 15px; }
+.order-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; margin-bottom: 15px; }
+.card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 24px; margin-bottom: 20px; }
+input { width: 100%; padding: 16px; background: #0f172a; border: 1px solid var(--border); border-radius: 14px; color: #fff; margin: 10px 0; font-family: inherit; }
+.btn { border: none; border-radius: 14px; font-weight: 800; cursor: pointer; padding: 16px; width: 100%; transition: 0.2s; }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--primary); color: white; }
+.btn-success { background: var(--success); color: white; padding: 10px 20px; font-size: 0.8rem; }
+.btn-danger { background: rgba(244, 63, 94, 0.1); color: var(--accent); padding: 10px; }
+.admin-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 40px); max-width: 410px; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); display: flex; border-radius: 24px; border: 1px solid var(--border); padding: 12px; z-index: 1000; }
+.nav-item { flex: 1; text-align: center; font-size: 0.65rem; color: #64748b; cursor: pointer; }
+.nav-item.active { color: var(--primary); }
+.nav-item i { display: block; font-size: 1.2rem; margin-bottom: 4px; }
+.srv-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: var(--card); border-radius: 18px; margin-bottom: 10px; border: 1px solid var(--border); }
+.status-btn { padding: 6px 12px; border-radius: 8px; border: none; font-size: 0.65rem; font-weight: 800; cursor: pointer; }
+.online { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+.offline { background: rgba(244, 63, 94, 0.2); color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div id="admin-auth">
+<div class="auth-card">
+<div style="font-size: 3.5rem; color: var(--primary); margin-bottom: 20px;"><i class="fas fa-fingerprint"></i></div>
+<h2>ADMIN ACCESS</h2>
+<p style="opacity:0.5; font-size: 0.8rem; margin-bottom: 25px;">SAMY TELAZA 407 Control</p>
+<input type="password" id="pass-code" placeholder="Code d'accès secret">
+<button class="btn btn-primary" onclick="loginAdmin()">HIDITRA ADMIN</button>
+</div>
+</div>
+
+<div class="admin-app" id="app">
+<header><div class="admin-title" id="header-title">TABLEAU DE BORD</div></header>
+
+<div id="pane-dash" class="pane">
+<div class="stats-container">
+<div class="stat-card" style="grid-column: span 2; background: linear-gradient(135deg, var(--primary), #4338ca);">
+<span class="stat-label" style="color:rgba(255,255,255,0.7)">Vola maty (Total)</span>
+<span class="stat-val" id="stat-money">0 Ar</span>
+</div>
+<div class="stat-card">
+<span class="stat-label">Miandry</span>
+<span class="stat-val" id="stat-pending" style="color: var(--warning);">0</span>
+</div>
+<div class="stat-card">
+<span class="stat-label">Clients</span>
+<span class="stat-val" id="stat-users">0</span>
+</div>
+</div>
+<div class="section-title"><i class="fas fa-bolt"></i> Action ilaina maika</div>
+<div class="order-list" id="urgent-list"></div>
+</div>
+
+<div id="pane-services" class="pane" style="display:none; padding: 20px;">
+<div class="section-title"><i class="fas fa-toggle-on"></i> Activé / Désactivé Tolotra</div>
+<div id="services-control-list" style="margin-top:15px;"></div>
+</div>
+
+<div id="pane-settings" class="pane" style="display:none; padding: 20px;">
+<div class="section-title"><i class="fas fa-cog"></i> Paramètres Admin</div>
+<div class="card">
+<h4>Numéros et Nom pour dépôt</h4>
+<input type="text" id="set-mvola" placeholder="Numéro Mvola">
+<input type="text" id="set-orange" placeholder="Numéro Orange">
+<input type="text" id="set-nom" placeholder="Nom du compte">
+<button class="btn btn-primary" onclick="saveAdminInfo()">SAUVEGARDER</button>
+</div>
+<div class="card">
+<h4>Changer Mot de Passe Admin</h4>
+<input type="password" id="new-pass" placeholder="Nouveau code">
+<button class="btn btn-primary" onclick="changePassword()">CHANGER</button>
+</div>
+</div>
+
+<div id="pane-all" class="pane" style="display:none;">
+<div class="section-title"><i class="fas fa-history"></i> Tantara rehetra</div>
+<div class="order-list" id="all-list"></div>
+</div>
+
+<nav class="admin-nav">
+<div class="nav-item active" onclick="showPane('dash', this)"><i class="fas fa-home"></i>DASH</div>
+<div class="nav-item" onclick="showPane('services', this)"><i class="fas fa-tasks"></i>SOKAJY</div>
+<div class="nav-item" onclick="showPane('all', this)"><i class="fas fa-database"></i>REHETRA</div>
+<div class="nav-item" onclick="showPane('settings', this)"><i class="fas fa-cog"></i>SETTINGS</div>
+<div class="nav-item" onclick="logout()"><i class="fas fa-power-off"></i>OUT</div>
+</nav>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
+
+// CONFIG FIREBASE
+const firebaseConfig = {
+  apiKey: "AIzaSyD1a452y1hJKvf8c0YUJQIS7wP6lNpI8hs",
+  authDomain: "boost-like-e9f42.firebaseapp.com",
+  projectId: "boost-like-e9f42",
+  storageBucket: "boost-like-e9f42.firebasestorage.app",
+  messagingSenderId: "557758284766",
+  appId: "1:557758284766:web:371c292b9b06c0d605934f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let SECRET = "20202404";
+let servicesData = { fb: [], tt: [] };
+
+window.loginAdmin = async function() {
+    const pass = document.getElementById('pass-code').value;
+    const adminDoc = await getDoc(doc(db, "config", "admin"));
+    if(adminDoc.exists()) SECRET = adminDoc.data().password || SECRET;
+
+    if(pass === SECRET) {
+        document.getElementById('admin-auth').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        loadData();
+    } else { alert("Code diso!"); }
+}
+
+window.showPane = function(pane, el) {
+    document.querySelectorAll('.pane').forEach(p => p.style.display = 'none');
+    document.getElementById('pane-' + pane).style.display = 'block';
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('header-title').innerText = pane === 'services'? 'FITANTANANA TOLOTRA' : (pane === 'all'? 'TANTARA REHETRA' : pane === 'settings'? 'PARAMETRES' : 'TABLEAU DE BORD');
+    if(pane === 'services') renderServices();
+    if(pane === 'settings') loadSettings();
+}
+
+function loadData() {
+    onSnapshot(collection(db, "orders"), (snap) => {
+        const urgentBox = document.getElementById('urgent-list');
+        const allBox = document.getElementById('all-list');
+        urgentBox.innerHTML = ''; allBox.innerHTML = '';
+
+        let stats = { money: 0, pending: 0 };
+        const orders = [];
+        snap.forEach(doc => orders.push({id: doc.id,...doc.data()}));
+
+        onSnapshot(collection(db, "users"), (usersSnap) => {
+            stats.users = usersSnap.size;
+            document.getElementById('stat-users').innerText = stats.users;
+        });
+
+        orders.sort((a,b) => b.created?.seconds - a.created?.seconds);
+
+        orders.forEach(h => {
+            if(h.status === 'Success' && h.amount < 0) stats.money += Math.abs(h.amount);
+            if(h.status === 'Pending') stats.pending++;
+
+            const cardHtml = `
+                <div class="order-card">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="font-weight:800; color:var(--primary)">${h.name} (${h.phone})</span>
+                        <b style="color:${h.amount > 0? 'var(--success)' : 'var(--accent)'}">${h.amount > 0? '+' : ''}${Math.abs(h.amount).toLocaleString()} Ar</b>
+                    </div>
+                    <div style="margin: 10px 0; font-size:0.85rem; background:rgba(0,0,0,0.2); padding:12px; border-radius:12px;">
+                        <b>TYPE:</b> ${h.type} | <b>SERVICE:</b> ${h.service || 'RECHARGE'}<br>
+                        ${h.ref? `<b>REF:</b> ${h.ref}<br>` : ''}
+                        ${h.url? `<b>LINK:</b> <small style="word-break:break-all; color:#94a3b8;">${h.url}</small><br>` : ''}
+                        ${h.qty? `<b>QTY:</b> ${h.qty}` : ''}
+                    </div>
+                    <div style="display:flex; align-items:center; justify-content:space-between;">
+                        <div style="font-size:0.6rem; opacity:0.4;">${h.created? new Date(h.created.seconds*1000).toLocaleString() : ''}</div>
+                        <div style="display:flex; gap:10px;">
+                            ${h.status === 'Pending'?
+                                `<button class="btn btn-success" onclick="approve('${h.id}', ${h.amount}, '${h.phone}')">APPROUVER</button>` :
+                                `<button class="btn btn-danger" onclick="deleteOrder('${h.id}')"><i class="fas fa-trash"></i></button>`
+                            }
+                        </div>
+                    </div>
+                </div>
+            `;
+            allBox.innerHTML += cardHtml;
+            if(h.status === 'Pending') urgentBox.innerHTML += cardHtml;
+        });
+
+        document.getElementById('stat-money').innerText = stats.money.toLocaleString() + " Ar";
+        document.getElementById('stat-pending').innerText = stats.pending;
+
+        if(!urgentBox.innerHTML) urgentBox.innerHTML = '<p style="text-align:center; opacity:0.3; padding:40px;">Tsy misy baiko miandry.</p>';
+    });
+}
+
+window.approve = async function(orderId, amount, phone) {
+    if(amount > 0) {
+        const userRef = doc(db, "users", phone);
+        await updateDoc(userRef, { solde: increment(amount) });
+    }
+    await updateDoc(doc(db, "orders", orderId), { status: 'Success' });
+    alert("Approuvé!");
+}
+
+window.deleteOrder = async function(orderId) {
+    if(confirm("Hofafana ao amin'ny tantara?")) {
+        await deleteDoc(doc(db, "orders", orderId));
+    }
+}
+
+function renderServices() {
+    onSnapshot(doc(db, "config", "services"), (snap) => {
+        if(snap.exists()) {
+            servicesData = snap.data();
+            const box = document.getElementById('services-control-list');
+            box.innerHTML = '';
+            ['fb', 'tt'].forEach(cat => {
+                box.innerHTML += `<h4 style="color:var(--primary); margin: 20px 0 10px;">${cat.toUpperCase()}</h4>`;
+                servicesData[cat].forEach((s, idx) => {
+                    box.innerHTML += `
+                        <div class="srv-item">
+                            <span style="font-size:0.85rem; font-weight:600;">${s.n}</span>
+                            <button class="status-btn ${s.status}" onclick="toggleSrv('${cat}', ${idx})">
+                                ${s.status.toUpperCase()}
+                            </button>
+                        </div>
+                    `;
+                });
+            });
+        }
+    });
+}
+
+window.toggleSrv = async function(cat, idx) {
+    servicesData[cat][idx].status = servicesData[cat][idx].status === 'online'? 'offline' : 'online';
+    await setDoc(doc(db, "config", "services"), servicesData);
+}
+
+function loadSettings() {
+    onSnapshot(doc(db, "config", "admin"), (snap) => {
+        if(snap.exists()) {
+            const data = snap.data();
+            document.getElementById('set-mvola').value = data.mvola || '';
+            document.getElementById('set-orange').value = data.orange || '';
+            document.getElementById('set-nom').value = data.nom || '';
+        }
+    });
+}
+
+window.saveAdminInfo = async function() {
+    const mvola = document.getElementById('set-mvola').value;
+    const orange = document.getElementById('set-orange').value;
+    const nom = document.getElementById('set-nom').value;
+
+    await setDoc(doc(db, "config", "admin"), {
+        mvola: mvola,
+        orange: orange,
+        nom: nom,
+        password: SECRET
+    }, { merge: true });
+
+    alert("Vita! Ny info dia novana.");
+}
+
+window.changePassword = async function() {
+    const newPass = document.getElementById('new-pass').value;
+    if(!newPass) return alert("Fenoy ny password vaovao");
+
+    await setDoc(doc(db, "config", "admin"), { password: newPass }, { merge: true });
+    SECRET = newPass;
+    document.getElementById('new-pass').value = '';
+    alert("Mot de passe changée!");
+}
+
+window.logout = function() {
+    location.reload();
+}
+</script>
+</body>
+</html>
