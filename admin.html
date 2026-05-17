@@ -27,12 +27,13 @@ header { padding: 25px 20px; background: rgba(15, 23, 42, 0.8); backdrop-filter:
 .order-list { padding: 15px; }
 .order-card { background: var(--card); border: 1px solid var(--border); border-radius: 24px; padding: 20px; margin-bottom: 15px; }
 .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 24px; margin-bottom: 20px; }
-input { width: 100%; padding: 16px; background: #0f172a; border: 1px solid var(--border); border-radius: 14px; color: #fff; margin: 10px 0; font-family: inherit; }
+input, input[type="time"] { width: 100%; padding: 16px; background: #0f172a; border: 1px solid var(--border); border-radius: 14px; color: #fff; margin: 10px 0; font-family: inherit; }
 .btn { border: none; border-radius: 14px; font-weight: 800; cursor: pointer; padding: 16px; width: 100%; transition: 0.2s; }
 .btn:active { transform: scale(0.97); }
 .btn-primary { background: var(--primary); color: white; }
 .btn-success { background: var(--success); color: white; padding: 10px 20px; font-size: 0.8rem; }
-.btn-danger { background: rgba(244, 63, 94, 0.1); color: var(--accent); padding: 10px; }
+.btn-danger { background: rgba(244, 63, 94, 0.1); color: var(--accent); padding: 10px; border: 1px solid var(--accent); }
+.btn-warning { background: var(--warning); color: white; }
 .admin-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 40px); max-width: 410px; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(10px); display: flex; border-radius: 24px; border: 1px solid var(--border); padding: 12px; z-index: 1000; }
 .nav-item { flex: 1; text-align: center; font-size: 0.65rem; color: #64748b; cursor: pointer; }
 .nav-item.active { color: var(--primary); }
@@ -41,9 +42,33 @@ input { width: 100%; padding: 16px; background: #0f172a; border: 1px solid var(-
 .status-btn { padding: 6px 12px; border-radius: 8px; border: none; font-size: 0.65rem; font-weight: 800; cursor: pointer; }
 .online { background: rgba(16, 185, 129, 0.2); color: var(--success); }
 .offline { background: rgba(244, 63, 94, 0.2); color: var(--accent); }
+.schedule-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.admin-toggle { display: flex; gap: 10px; margin-bottom: 15px; }
+.admin-toggle button { flex: 1; padding: 12px; border-radius: 12px; border: 2px solid var(--border); background: var(--card); color: var(--text); font-weight: 700; cursor: pointer; }
+.admin-toggle button.active { border-color: var(--primary); background: rgba(99, 102, 241, 0.2); }
+
+/* Modal */
+#modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 4000; padding: 20px; backdrop-filter: blur(8px); }
+.modal-card { background: var(--card); border: 1px solid var(--border); width: 100%; max-width: 320px; border-radius: 28px; padding: 30px; text-align: center; animation: scaleIn 0.2s ease; }
+@keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-btns { display: flex; gap: 10px; margin-top: 25px; }
+.modal-btns button { flex: 1; padding: 14px; border-radius: 14px; border: none; font-weight: 800; cursor: pointer; }
 </style>
 </head>
 <body>
+
+<!-- Modal -->
+<div id="modal-overlay">
+<div class="modal-card">
+<div id="m-icon" style="font-size: 3rem; margin-bottom: 15px;"></div>
+<div id="m-title" style="font-weight: 800; margin-bottom: 10px;"></div>
+<div id="m-msg" style="opacity: 0.7; font-size: 0.9rem; margin-bottom: 0;"></div>
+<div class="modal-btns" id="m-btns">
+<button id="m-cancel" style="background:#334155; color:#fff;">ANNULER</button>
+<button id="m-confirm" class="btn-primary">CONFIRMER</button>
+</div>
+</div>
+</div>
 
 <div id="admin-auth">
 <div class="auth-card">
@@ -84,17 +109,43 @@ input { width: 100%; padding: 16px; background: #0f172a; border: 1px solid var(-
 
 <div id="pane-settings" class="pane" style="display:none; padding: 20px;">
 <div class="section-title"><i class="fas fa-cog"></i> Paramètres Admin</div>
+
 <div class="card">
-<h4>Numéros et Nom pour dépôt</h4>
-<input type="text" id="set-mvola" placeholder="Numéro Mvola">
-<input type="text" id="set-orange" placeholder="Numéro Orange">
-<input type="text" id="set-nom" placeholder="Nom du compte">
-<button class="btn btn-primary" onclick="saveAdminInfo()">SAUVEGARDER</button>
+<h4>Logo du site via URL</h4>
+<input type="url" id="set-logo" placeholder="https://i.imgur.com/xxx.jpg">
+<p style="font-size:0.7rem; opacity:0.6; margin-top:5px;">Colle l'URL d'une image Google Images, Pinterest, Imgur, etc.</p>
+<button class="btn btn-primary" onclick="saveLogo()">SAUVEGARDER LOGO</button>
 </div>
+
+<div class="card">
+<h4>Statut du site</h4>
+<input type="time" id="return-time" placeholder="Heure de retour">
+<button class="btn" id="site-status-btn" onclick="toggleSiteStatus()">Chargement...</button>
+</div>
+
+<div class="card">
+<h4><i class="fas fa-clock"></i> Emploi du temps Admin</h4>
+<div class="admin-toggle">
+<button id="btn-loik" onclick="setActiveAdmin('loik')">Admin Loik</button>
+<button id="btn-tsila" onclick="setActiveAdmin('tsila')">Admin Tsila</button>
+</div>
+<div class="schedule-grid">
+<div>
+<label>Admin Loik - Heure</label>
+<input type="time" id="time-loik" placeholder="09:00">
+</div>
+<div>
+<label>Admin Tsila - Heure</label>
+<input type="time" id="time-tsila" placeholder="18:00">
+</div>
+</div>
+<button class="btn btn-primary" onclick="saveSchedule()">SAUVEGARDER HORAIRE</button>
+</div>
+
 <div class="card">
 <h4>Changer Mot de Passe Admin</h4>
 <input type="password" id="new-pass" placeholder="Nouveau code">
-<button class="btn btn-primary" onclick="changePassword()">CHANGER</button>
+<button class="btn btn-primary" onclick="requestChangePassword()">CHANGER</button>
 </div>
 </div>
 
@@ -116,7 +167,6 @@ input { width: 100%; padding: 16px; background: #0f172a; border: 1px solid var(-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/12.13.0/firebase-firestore.js";
 
-// CONFIG FIREBASE
 const firebaseConfig = {
   apiKey: "AIzaSyD1a452y1hJKvf8c0YUJQIS7wP6lNpI8hs",
   authDomain: "boost-like-e9f42.firebaseapp.com",
@@ -130,7 +180,36 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let SECRET = "20202404";
-let servicesData = { fb: [], tt: [] };
+let servicesData = { fb: [], tt: [], ig: [] };
+let pendingAction = null;
+
+function showModal(type, title, msg, isConfirm = false, action = null) {
+    const overlay = document.getElementById('modal-overlay');
+    document.getElementById('m-title').innerText = title;
+    document.getElementById('m-msg').innerText = msg;
+    document.getElementById('m-icon').innerHTML = type === 'success'? '<i class="fas fa-check-circle" style="color:var(--success)"></i>' :
+                                                   type === 'warning'? '<i class="fas fa-exclamation-triangle" style="color:var(--warning)"></i>' :
+                                                   '<i class="fas fa-exclamation-circle" style="color:var(--accent)"></i>';
+
+    document.getElementById('m-btns').style.display = isConfirm? 'flex' : 'none';
+    pendingAction = action;
+    overlay.style.display = 'flex';
+}
+
+document.getElementById('m-cancel').onclick = () => {
+    document.getElementById('modal-overlay').style.display = 'none';
+    pendingAction = null;
+}
+
+document.getElementById('m-confirm').onclick = async () => {
+    document.getElementById('modal-overlay').style.display = 'none';
+    if(pendingAction) await pendingAction();
+    pendingAction = null;
+}
+
+function showAlert(type, title, msg) {
+    showModal(type, title, msg, false);
+}
 
 window.loginAdmin = async function() {
     const pass = document.getElementById('pass-code').value;
@@ -141,7 +220,7 @@ window.loginAdmin = async function() {
         document.getElementById('admin-auth').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         loadData();
-    } else { alert("Code diso!"); }
+    } else { showAlert('error', 'Erreur', 'Code incorrect!'); }
 }
 
 window.showPane = function(pane, el) {
@@ -158,85 +237,72 @@ function loadData() {
     onSnapshot(collection(db, "orders"), (snap) => {
         const urgentBox = document.getElementById('urgent-list');
         const allBox = document.getElementById('all-list');
-        urgentBox.innerHTML = ''; allBox.innerHTML = '';
+        urgentBox.innerHTML = '';
+        allBox.innerHTML = '';
 
-        let stats = { money: 0, pending: 0 };
+        let totalMoney = 0;
+        let pendingCount = 0;
+
         const orders = [];
         snap.forEach(doc => orders.push({id: doc.id,...doc.data()}));
-
-        onSnapshot(collection(db, "users"), (usersSnap) => {
-            stats.users = usersSnap.size;
-            document.getElementById('stat-users').innerText = stats.users;
-        });
-
         orders.sort((a,b) => b.created?.seconds - a.created?.seconds);
 
         orders.forEach(h => {
-            if(h.status === 'Success' && h.amount < 0) stats.money += Math.abs(h.amount);
-            if(h.status === 'Pending') stats.pending++;
+            if(h.status === 'Pending') pendingCount++;
+            if(h.amount < 0) totalMoney += Math.abs(h.amount);
 
-            const cardHtml = `
+            const dateStr = h.created? new Date(h.created.seconds*1000).toLocaleString('fr-FR') : '';
+
+            const html = `
                 <div class="order-card">
-                    <div style="display:flex; justify-content:space-between;">
-                        <span style="font-weight:800; color:var(--primary)">${h.name} (${h.phone})</span>
-                        <b style="color:${h.amount > 0? 'var(--success)' : 'var(--accent)'}">${h.amount > 0? '+' : ''}${Math.abs(h.amount).toLocaleString()} Ar</b>
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <span style="font-weight:800;">${h.name}</span>
+                        <span style="color:${h.amount > 0? 'var(--success)' : 'var(--accent)'}">${h.amount > 0? '+' : ''}${Math.abs(h.amount).toLocaleString()} Ar</span>
                     </div>
-                    <div style="margin: 10px 0; font-size:0.85rem; background:rgba(0,0,0,0.2); padding:12px; border-radius:12px;">
-                        <b>TYPE:</b> ${h.type} | <b>SERVICE:</b> ${h.service || 'RECHARGE'}<br>
-                        ${h.ref? `<b>REF:</b> ${h.ref}<br>` : ''}
-                        ${h.url? `<b>LINK:</b> <small style="word-break:break-all; color:#94a3b8;">${h.url}</small><br>` : ''}
-                        ${h.qty? `<b>QTY:</b> ${h.qty}` : ''}
+                    <div style="font-size:0.8rem; opacity:0.7; margin-bottom:5px;">
+                        ${h.service || 'DEPOT'} - ${h.phone}
                     </div>
-                    <div style="display:flex; align-items:center; justify-content:space-between;">
-                        <div style="font-size:0.6rem; opacity:0.4;">${h.created? new Date(h.created.seconds*1000).toLocaleString() : ''}</div>
-                        <div style="display:flex; gap:10px;">
-                            ${h.status === 'Pending'?
-                                `<button class="btn btn-success" onclick="approve('${h.id}', ${h.amount}, '${h.phone}')">APPROUVER</button>` :
-                                `<button class="btn btn-danger" onclick="deleteOrder('${h.id}')"><i class="fas fa-trash"></i></button>`
-                            }
-                        </div>
+                    <div style="font-size:0.7rem; opacity:0.5; margin-bottom:10px;">
+                        <i class="fas fa-clock"></i> ${dateStr}
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        ${h.status === 'Pending'? `
+                        <button class="btn btn-success" style="flex:1;" onclick="requestApprove('${h.id}', '${h.phone}', ${h.amount})">APPROUVER</button>
+                        ` : `<span style="flex:1; text-align:center; color:var(--success); font-size:0.8rem;"><i class="fas fa-check"></i> ${h.status}</span>`}
+                        <button class="btn btn-danger" style="flex:1;" onclick="requestDelete('${h.id}')">
+                            <i class="fas fa-trash"></i> SUPPRIMER
+                        </button>
                     </div>
                 </div>
             `;
-            allBox.innerHTML += cardHtml;
-            if(h.status === 'Pending') urgentBox.innerHTML += cardHtml;
+
+            allBox.innerHTML += html;
+            if(h.status === 'Pending') urgentBox.innerHTML += html;
         });
 
-        document.getElementById('stat-money').innerText = stats.money.toLocaleString() + " Ar";
-        document.getElementById('stat-pending').innerText = stats.pending;
+        document.getElementById('stat-money').innerText = totalMoney.toLocaleString() + ' Ar';
+        document.getElementById('stat-pending').innerText = pendingCount;
+    });
 
-        if(!urgentBox.innerHTML) urgentBox.innerHTML = '<p style="text-align:center; opacity:0.3; padding:40px;">Tsy misy baiko miandry.</p>';
+    onSnapshot(collection(db, "users"), (snap) => {
+        document.getElementById('stat-users').innerText = snap.size;
     });
 }
 
-window.approve = async function(orderId, amount, phone) {
-    if(amount > 0) {
-        const userRef = doc(db, "users", phone);
-        await updateDoc(userRef, { solde: increment(amount) });
-    }
-    await updateDoc(doc(db, "orders", orderId), { status: 'Success' });
-    alert("Approuvé!");
-}
-
-window.deleteOrder = async function(orderId) {
-    if(confirm("Hofafana ao amin'ny tantara?")) {
-        await deleteDoc(doc(db, "orders", orderId));
-    }
-}
-
-function renderServices() {
+window.renderServices = function() {
     onSnapshot(doc(db, "config", "services"), (snap) => {
         if(snap.exists()) {
             servicesData = snap.data();
             const box = document.getElementById('services-control-list');
             box.innerHTML = '';
-            ['fb', 'tt'].forEach(cat => {
-                box.innerHTML += `<h4 style="color:var(--primary); margin: 20px 0 10px;">${cat.toUpperCase()}</h4>`;
-                servicesData[cat].forEach((s, idx) => {
+
+            ['fb', 'tt', 'ig'].forEach(type => {
+                box.innerHTML += `<h4 style="margin:20px 0 10px;">${type.toUpperCase()}</h4>`;
+                servicesData[type].forEach((s, i) => {
                     box.innerHTML += `
                         <div class="srv-item">
-                            <span style="font-size:0.85rem; font-weight:600;">${s.n}</span>
-                            <button class="status-btn ${s.status}" onclick="toggleSrv('${cat}', ${idx})">
+                            <span>${s.n}</span>
+                            <button class="status-btn ${s.status}" onclick="toggleSrv('${type}', ${i})">
                                 ${s.status.toUpperCase()}
                             </button>
                         </div>
@@ -247,50 +313,117 @@ function renderServices() {
     });
 }
 
-window.toggleSrv = async function(cat, idx) {
-    servicesData[cat][idx].status = servicesData[cat][idx].status === 'online'? 'offline' : 'online';
-    await setDoc(doc(db, "config", "services"), servicesData);
+window.toggleSrv = async function(type, index) {
+    const newStatus = servicesData[type][index].status === 'online'? 'offline' : 'online';
+    servicesData[type][index].status = newStatus;
+    await updateDoc(doc(db, "config", "services"), { [type]: servicesData[type] });
+    showAlert('success', 'OK', 'Statut modifié!');
 }
 
-function loadSettings() {
-    onSnapshot(doc(db, "config", "admin"), (snap) => {
-        if(snap.exists()) {
-            const data = snap.data();
-            document.getElementById('set-mvola').value = data.mvola || '';
-            document.getElementById('set-orange').value = data.orange || '';
-            document.getElementById('set-nom').value = data.nom || '';
+window.loadSettings = async function() {
+    const snap = await getDoc(doc(db, "config", "admin"));
+    if(snap.exists()) {
+        const data = snap.data();
+        document.getElementById('set-logo').value = data.logo || '';
+        document.getElementById('return-time').value = data.return_time || '';
+        document.getElementById('time-loik').value = data.time_loik || '09:00';
+        document.getElementById('time-tsila').value = data.time_tsila || '18:00';
+
+        const active = data.active_admin || 'loik';
+        document.getElementById('btn-loik').classList.toggle('active', active === 'loik');
+        document.getElementById('btn-tsila').classList.toggle('active', active === 'tsila');
+
+        const btn = document.getElementById('site-status-btn');
+        if(data.site_status === 'offline') {
+            btn.className = 'btn btn-danger';
+            btn.innerText = 'SITE OFFLINE - Cliquer pour activer';
+        } else {
+            btn.className = 'btn btn-success';
+            btn.innerText = 'SITE ONLINE - Cliquer pour désactiver';
         }
+    }
+}
+
+window.setActiveAdmin = async function(admin) {
+    await updateDoc(doc(db, "config", "admin"), { active_admin: admin });
+    document.getElementById('btn-loik').classList.toggle('active', admin === 'loik');
+    document.getElementById('btn-tsila').classList.toggle('active', admin === 'tsila');
+    showAlert('success', 'OK', `Admin ${admin} activé!`);
+}
+
+window.saveLogo = async function() {
+    const logo = document.getElementById('set-logo').value;
+    if(!logo.startsWith('http')) return showAlert('error', 'Erreur', 'URL invalide');
+    await setDoc(doc(db, "config", "admin"), { logo: logo }, { merge: true });
+    showAlert('success', 'OK', 'Logo sauvegardé!');
+}
+
+window.toggleSiteStatus = async function() {
+    const snap = await getDoc(doc(db, "config", "admin"));
+    const current = snap.data().site_status || 'online';
+    const returnTime = document.getElementById('return-time').value;
+
+    if(current === 'online' &&!returnTime) {
+        return showAlert('error', 'Erreur', 'Mets l\'heure de retour avant de fermer');
+    }
+
+    const newStatus = current === 'online'? 'offline' : 'online';
+    await updateDoc(doc(db, "config", "admin"), {
+        site_status: newStatus,
+        return_time: returnTime
+    });
+    loadSettings();
+    showAlert('success', 'OK', `Site ${newStatus}`);
+}
+
+window.saveSchedule = async function() {
+    await updateDoc(doc(db, "config", "admin"), {
+        time_loik: document.getElementById('time-loik').value,
+        time_tsila: document.getElementById('time-tsila').value
+    });
+    showAlert('success', 'OK', 'Horaires sauvegardés!');
+}
+
+window.requestChangePassword = function() {
+    const newPass = document.getElementById('new-pass').value;
+    if(newPass.length < 4) return showAlert('error', 'Erreur', 'Min 4 caractères');
+
+    showModal('warning', 'Confirmation', 'Changer le mot de passe admin?', true, async () => {
+        await updateDoc(doc(db, "config", "admin"), { password: newPass });
+        showAlert('success', 'OK', 'Mot de passe changé!');
+        document.getElementById('new-pass').value = '';
     });
 }
 
-window.saveAdminInfo = async function() {
-    const mvola = document.getElementById('set-mvola').value;
-    const orange = document.getElementById('set-orange').value;
-    const nom = document.getElementById('set-nom').value;
-
-    await setDoc(doc(db, "config", "admin"), {
-        mvola: mvola,
-        orange: orange,
-        nom: nom,
-        password: SECRET
-    }, { merge: true });
-
-    alert("Vita! Ny info dia novana.");
+window.requestApprove = function(orderId, phone, amount) {
+    showModal('warning', 'Approuver commande', 'Confirmer l\'approbation de cette commande?', true, async () => {
+        await approveOrder(orderId, phone, amount);
+    });
 }
 
-window.changePassword = async function() {
-    const newPass = document.getElementById('new-pass').value;
-    if(!newPass) return alert("Fenoy ny password vaovao");
+window.requestDelete = function(orderId) {
+    showModal('error', 'Supprimer commande', 'Cette action est irréversible. Continuer?', true, async () => {
+        await deleteOrder(orderId);
+    });
+}
 
-    await setDoc(doc(db, "config", "admin"), { password: newPass }, { merge: true });
-    SECRET = newPass;
-    document.getElementById('new-pass').value = '';
-    alert("Mot de passe changée!");
+async function approveOrder(orderId, phone, amount) {
+    if(amount > 0) {
+        await updateDoc(doc(db, "users", phone), { solde: increment(amount) });
+    }
+    await updateDoc(doc(db, "orders", orderId), { status: 'Success' });
+    showAlert('success', 'OK', 'Commande approuvée!');
+}
+
+async function deleteOrder(orderId) {
+    await deleteDoc(doc(db, "orders", orderId));
+    showAlert('success', 'OK', 'Commande supprimée!');
 }
 
 window.logout = function() {
-    location.reload();
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('admin-auth').style.display = 'flex';
 }
 </script>
 </body>
-</html>
+    </html>
