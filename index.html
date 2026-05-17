@@ -16,11 +16,14 @@
 body { font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; background: var(--bg); color: var(--text); overflow-x: hidden; }
 .app { max-width: 450px; margin: auto; min-height: 100vh; position: relative; }
 header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(15px); position: sticky; top: 0; z-index: 100; }
-.logo-text { font-weight: 800; color: var(--primary); letter-spacing: 1px; cursor: pointer; }
+.logo-box { display: flex; align-items: center; gap: 10px; }
+.logo-img { width: 35px; height: 35px; border-radius: 10px; object-fit: cover; border: 2px solid var(--primary); }
+.logo-text { font-weight: 800; color: var(--primary); letter-spacing: 1px; }
 .balance-box { background: linear-gradient(135deg, var(--primary), #4338ca); padding: 8px 15px; border-radius: 14px; font-weight: 800; color: white; }
 #login-screen { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: flex; flex-direction: column; justify-content: center; padding: 40px; }
-.avatar-preview { width: 90px; height: 90px; border-radius: 50%; background: var(--card); margin: 0 auto 15px; border: 3px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--primary); }
-.page { display: none; padding: 20px; padding-bottom: 110px; animation: fadeIn 0.3s ease; }
+.avatar-preview { width: 90px; height: 90px; border-radius: 50%; background: var(--card); margin: 0 auto 15px; border: 3px solid var(--primary); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: var(--primary); overflow: hidden; }
+.avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+.page { display: none; padding: 20px; padding-bottom: 130px; animation: fadeIn 0.3s ease; }
 .page.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .card { background: var(--card); border: 1px solid var(--border); padding: 20px; border-radius: 24px; margin-bottom: 20px; }
@@ -41,9 +44,62 @@ nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); wid
 .nav-link i { display: block; font-size: 1.4rem; margin-bottom: 4px; }
 #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 3000; padding: 20px; backdrop-filter: blur(8px); }
 .modal-card { background: var(--card); border: 1px solid var(--border); width: 100%; max-width: 320px; border-radius: 28px; padding: 30px; text-align: center; }
+footer { text-align: center; padding: 20px; font-size: 0.7rem; opacity: 0.5; }
+.maintenance { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px; }
+.maintenance i { font-size: 4rem; color: var(--warning); margin-bottom: 20px; }
+.fb-help-float {
+    position: fixed;
+    bottom: 90px;
+    left: 20px;
+    width: 55px;
+    height: 55px;
+    background: #1877f2;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.8rem;
+    z-index: 999;
+    box-shadow: 0 4px 20px rgba(24, 119, 242, 0.5);
+    animation: pulse 2s infinite;
+    cursor: pointer;
+}
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(24, 119, 242, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(24, 119, 242, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(24, 119, 242, 0); }
+}
+.admin-badge {
+    background: var(--primary);
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    margin-left: 8px;
+}
+.schedule-info {
+    background: rgba(99, 102, 241, 0.1);
+    padding: 10px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    font-size: 0.75rem;
+    text-align: center;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+}
 </style>
 </head>
 <body>
+
+<div class="maintenance" id="maintenance-mode">
+<i class="fas fa-tools"></i>
+<h2>Nous sommes fermés</h2>
+<p id="maintenance-msg">Revenez à 20h30</p>
+</div>
+
+<div class="fb-help-float" id="fb-help" onclick="window.open('https://www.facebook.com/profile.php?id=61589704166219', '_blank')">
+<i class="fab fa-facebook-f"></i>
+</div>
 
 <div class="app">
 <div id="modal-overlay">
@@ -57,7 +113,9 @@ nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); wid
 
 <div id="login-screen">
 <div class="profile-setup" style="text-align:center;">
-<div class="avatar-preview" onclick="handleLogoClick()"><i class="fas fa-user-shield"></i></div>
+<div class="avatar-preview" id="login-logo-img" onclick="handleLogoClick()">
+<i class="fas fa-user-shield"></i>
+</div>
 <h2 id="login-logo" style="margin:0; font-weight:800; color:var(--primary);">SAMY TELAZA 407</h2>
 <p style="opacity:0.5; font-size:0.8rem;">Professional Social Booster</p>
 </div>
@@ -67,7 +125,10 @@ nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); wid
 </div>
 
 <header id="main-header" style="display:none;">
-<div class="logo-text">SAMY TELAZA 407</div>
+<div class="logo-box">
+<img id="header-logo" class="logo-img" src="" style="display:none;">
+<div class="logo-text">SAMY TELAZA 407 <span class="admin-badge" id="admin-badge">LOIK</span></div>
+</div>
 <div class="balance-box"><span id="user-solde">0</span> Ar</div>
 </header>
 
@@ -76,10 +137,11 @@ nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); wid
 <div style="display: flex; gap: 10px; margin-bottom: 20px;">
 <button class="btn-action cat-btn active" style="flex:1;" onclick="changeCat('fb', this)">FACEBOOK</button>
 <button class="btn-action cat-btn" style="flex:1; background: #334155;" onclick="changeCat('tt', this)">TIKTOK</button>
+<button class="btn-action cat-btn" style="flex:1; background: #334155;" onclick="changeCat('ig', this)">INSTAGRAM</button>
 </div>
 <div id="list-services"></div>
 <div class="card">
-<input type="text" id="order-url" placeholder="Lien / Rohy (Facebook na TikTok)">
+<input type="text" id="order-url" placeholder="Lien / Rohy">
 <input type="number" id="order-qty" value="100" min="100" oninput="calcTotal()">
 <div style="display:flex; justify-content:space-between; align-items:center; margin: 15px 0;">
 <span style="font-size: 0.8rem; font-weight: 700;">Vola aloa:</span>
@@ -91,6 +153,9 @@ nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); wid
 
 <div id="page-solde" class="page">
 <h3><i class="fas fa-university"></i> Depôt Vola</h3>
+<div class="schedule-info" id="schedule-info">
+Admin en service: <strong id="active-admin-name">Loik</strong> - <span id="active-admin-time">09:00</span>
+</div>
 <div class="card" id="admin-numbers" style="background: linear-gradient(135deg, #4f46e5, #312e81); border:none;">
 Chargement...
 </div>
@@ -104,10 +169,32 @@ Chargement...
 <div id="history-content"></div>
 </div>
 
+<div id="page-moi" class="page">
+<h3><i class="fas fa-user"></i> Kaontiko</h3>
+<div class="card">
+<div style="margin-bottom: 15px;">
+<span style="opacity:0.6; font-size:0.8rem;">Anarana:</span>
+<div style="font-weight:800; font-size:1.1rem;" id="moi-name">-</div>
+</div>
+<div style="margin-bottom: 15px;">
+<span style="opacity:0.6; font-size:0.8rem;">Laharana:</span>
+<div style="font-weight:800; font-size:1.1rem;" id="moi-phone">-</div>
+</div>
+<div style="margin-bottom: 20px;">
+<span style="opacity:0.6; font-size:0.8rem;">Solde:</span>
+<div style="font-weight:800; font-size:1.4rem; color:var(--success);" id="moi-solde">0 Ar</div>
+</div>
+<button class="btn-action" style="background:var(--accent);" onclick="logout()">MIVOAKA</button>
+</div>
+</div>
+
+<footer>Tout droit reservé© yt boost 2026</footer>
+
 <nav id="main-nav" style="display:none;">
 <div class="nav-link active" onclick="nav('page-boost', this)"><i class="fas fa-rocket"></i>BOOST</div>
 <div class="nav-link" onclick="nav('page-solde', this)"><i class="fas fa-wallet"></i>SOLDE</div>
 <div class="nav-link" onclick="nav('page-history', this)"><i class="fas fa-list-alt"></i>HISTORY</div>
+<div class="nav-link" onclick="nav('page-moi', this)"><i class="fas fa-user"></i>MOI</div>
 </nav>
 </div>
 
@@ -132,25 +219,67 @@ let userPhone = null;
 let logoClicks = 0;
 let currentRate = 1.5;
 let currentServiceName = "";
-let services = { fb: [], tt: [] };
+let services = { fb: [], tt: [], ig: [] };
+
+const ADMIN_DATA = {
+    loik: {
+        name: "Mouna essa alida",
+        mvola: "0345400408",
+        orange: "0372869644"
+    },
+    tsila: {
+        name: "Josiane",
+        mvola: "0347871139",
+        orange: "non disponible"
+    }
+};
+
+onSnapshot(doc(db, "config", "admin"), (snap) => {
+    if(snap.exists()) {
+        const data = snap.data();
+
+        if(data.logo && data.logo.startsWith('http')) {
+            document.getElementById('header-logo').src = data.logo;
+            document.getElementById('header-logo').style.display = 'block';
+            document.getElementById('login-logo-img').innerHTML = `<img src="${data.logo}">`;
+        }
+
+        const activeAdmin = data.active_admin || 'loik';
+        const adminInfo = ADMIN_DATA[activeAdmin];
+
+        document.getElementById('admin-badge').innerText = activeAdmin.toUpperCase();
+        document.getElementById('active-admin-name').innerText = activeAdmin.charAt(0).toUpperCase() + activeAdmin.slice(1);
+        document.getElementById('active-admin-time').innerText = data[`time_${activeAdmin}`] || '09:00';
+
+        document.getElementById('admin-numbers').innerHTML = `
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span>Mvola:</span> <strong>${adminInfo.mvola}</strong>
+            </div>
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <span>Orange:</span> <strong>${adminInfo.orange}</strong>
+            </div>
+            <div style="margin-top:15px; font-size:0.7rem; text-align:center; opacity:0.8;">
+                Anarana: ${adminInfo.name}
+            </div>
+        `;
+
+        if(data.site_status === 'offline') {
+            document.getElementById('maintenance-msg').innerText = `Revenez à ${data.return_time || 'plus tard'}`;
+            document.getElementById('maintenance-mode').style.display = 'flex';
+        } else {
+            document.getElementById('maintenance-mode').style.display = 'none';
+        }
+    }
+});
 
 onSnapshot(doc(db, "config", "services"), (snap) => {
     if(snap.exists()) {
         services = snap.data();
         if(document.querySelector('.cat-btn.active')) {
-            changeCat(document.querySelector('.cat-btn.active').innerText.toLowerCase().includes('fb')? 'fb' : 'tt', document.querySelector('.cat-btn.active'));
+            const activeType = document.querySelector('.cat-btn.active').innerText.toLowerCase().includes('fb')? 'fb' :
+                              document.querySelector('.cat-btn.active').innerText.toLowerCase().includes('tt')? 'tt' : 'ig';
+            changeCat(activeType, document.querySelector('.cat-btn.active'));
         }
-    }
-});
-
-onSnapshot(doc(db, "config", "admin"), (snap) => {
-    if(snap.exists()) {
-        const data = snap.data();
-        document.getElementById('admin-numbers').innerHTML = `
-            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>Mvola:</span> <strong>${data.mvola || '-'}</strong></div>
-            <div style="display:flex; justify-content:space-between;"><span>Orange:</span> <strong>${data.orange || '-'}</strong></div>
-            <div style="margin-top:15px; font-size:0.7rem; text-align:center; opacity:0.8;">Anarana: ${data.nom || '-'}</div>
-        `;
     }
 });
 
@@ -177,7 +306,7 @@ function showModal(type, title, msg) {
 window.login = async function() {
     const name = document.getElementById('user-name').value;
     const phone = document.getElementById('phone-input').value;
-    if(!name || phone.length < 10) return showModal('error', 'Tsy feno', 'Fenoy tsara ny mombamomba.');
+    if(!name ||!phone) return showModal('error', 'Tsy feno', 'Fenoy tsara ny mombamomba.');
 
     userPhone = phone;
     const userRef = doc(db, "users", phone);
@@ -191,6 +320,7 @@ window.login = async function() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('main-header').style.display = 'flex';
     document.getElementById('main-nav').style.display = 'flex';
+    document.getElementById('fb-help').style.display = 'flex';
     updateUI();
     nav('page-boost', document.querySelector('.nav-link'));
     changeCat('fb', document.querySelector('.cat-btn'));
@@ -223,7 +353,7 @@ window.changeCat = function(type, el) {
         div.innerHTML = `
             <div>
                 <div style="font-weight:700;">${s.n} <span class="status-pill ${s.status}">${s.status.toUpperCase()}</span></div>
-                <div style="font-size:0.65rem; opacity:0.5;">Fandefasana haingana</div>
+                <div style="font-size:0.65rem; opacity:0.5;">${s.n.includes('Likes') && type==='ig'? 'Min 1000' : 'Fandefasana haingana'}</div>
             </div>
             <b style="color:var(--primary)">${s.r} Ar</b>`;
 
@@ -239,7 +369,11 @@ window.changeCat = function(type, el) {
 }
 
 window.calcTotal = function() {
-    const q = document.getElementById('order-qty').value;
+    let q = parseInt(document.getElementById('order-qty').value) || 0;
+    if(currentServiceName.includes('Likes') && q < 1000) {
+        document.getElementById('order-qty').value = 1000;
+        q = 1000;
+    }
     document.getElementById('total-val').innerText = (Math.floor(q * currentRate)).toLocaleString();
 }
 
@@ -248,6 +382,7 @@ window.submitOrder = async function() {
     const qty = document.getElementById('order-qty').value;
     const total = Math.floor(qty * currentRate);
     if(!url || qty < 100) return showModal('error', 'Banga', 'Fenoy ny rohy sy ny isany (min 100).');
+    if(currentServiceName.includes('Likes') && qty < 1000) return showModal('error', 'Banga', 'Min 1000 ho an\'ny Instagram Likes.');
     if(userData.solde < total) return showModal('error', 'Tsy ampy solde', 'Mba mampidira solde aloha.');
 
     const userRef = doc(db, "users", userPhone);
@@ -301,26 +436,44 @@ function renderHistory() {
             return;
         }
 
-        box.innerHTML = orders.map(h => `
+        box.innerHTML = orders.map(h => {
+            const dateStr = h.created? new Date(h.created.seconds*1000).toLocaleString('fr-FR') : '';
+            return `
             <div class="hist-item">
                 <div class="hist-status-bar" style="background:${h.status==='Success'? 'var(--success)' : 'var(--warning)'}"></div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
                     <span style="font-weight:800; font-size:0.9rem;">${h.service || 'DEPOT SOLDE'}</span>
                     <b style="color:${h.amount > 0? 'var(--success)' : 'var(--accent)'}">${h.amount > 0? '+' : ''}${Math.abs(h.amount).toLocaleString()} Ar</b>
                 </div>
-                <div style="font-size:0.65rem; opacity:0.6; margin-bottom:8px; word-break:break-all;">${h.url || 'Ref: '+h.ref}</div>
+                <div style="font-size:0.65rem; opacity:0.6; margin-bottom:5px; word-break:break-all;">${h.url || 'Ref: '+h.ref}</div>
+                <div style="font-size:0.65rem; opacity:0.5; margin-bottom:8px;">
+                    <i class="fas fa-clock"></i> ${dateStr}
+                </div>
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <span style="font-size:0.6rem; opacity:0.5;">${h.created? new Date(h.created.seconds*1000).toLocaleString() : ''}</span>
+                    <span style="font-size:0.6rem; opacity:0.5;"></span>
                     <span style="font-size:0.65rem; font-weight:800; color:${h.status==='Success'?'var(--success)':'var(--warning)'}">${h.status.toUpperCase()}</span>
                 </div>
             </div>
-        `).join('');
+        `}).join('');
     });
 }
 
 function updateUI() {
     document.getElementById('user-solde').innerText = userData.solde.toLocaleString();
+    document.getElementById('moi-name').innerText = userData.name;
+    document.getElementById('moi-phone').innerText = userData.phone;
+    document.getElementById('moi-solde').innerText = userData.solde.toLocaleString() + " Ar";
+}
+
+window.logout = function() {
+    userData = null;
+    userPhone = null;
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('main-header').style.display = 'none';
+    document.getElementById('main-nav').style.display = 'none';
+    document.getElementById('fb-help').style.display = 'none';
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
 }
 </script>
 </body>
-</html>
+                      </html>
